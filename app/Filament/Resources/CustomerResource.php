@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,7 +37,9 @@ class CustomerResource extends Resource
 
             TextInput::make('phone_number')->maxLength(50),
 
-            TextInput::make('description')->maxLength(500)->columnSpanFull(),
+            Textarea::make('description')->maxLength(500)->columnSpanFull(),
+            Select::make('lead_source_id')
+                ->relationship('leadSource', 'name'),
 
             Placeholder::make('created_at')
                 ->label('Created Date')
@@ -64,6 +68,8 @@ class CustomerResource extends Resource
 
             TextColumn::make('phone_number')
                 ->searchable(),
+
+            TextColumn::make('leadSource.name'),
 
             TextColumn::make('created_at')
                 ->dateTime()
