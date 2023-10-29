@@ -38,8 +38,13 @@ class CustomerResource extends Resource
             TextInput::make('phone_number')->maxLength(50),
 
             Textarea::make('description')->maxLength(500)->columnSpanFull(),
+
             Select::make('lead_source_id')
                 ->relationship('leadSource', 'name'),
+
+            Select::make('tags')
+                ->relationship('tags', 'name')
+                ->multiple(),
 
             Placeholder::make('created_at')
                 ->label('Created Date')
@@ -57,8 +62,10 @@ class CustomerResource extends Resource
             TextColumn::make('first_name')
                 ->label('Name')
                 ->formatStateUsing(function ($record) {
-                    return $record->first_name . ' ' . $record->last_name;
+                    $tagsList = view('customer.tagsList', ['tags' => $record->tags])->render();
+                    return $record->first_name . ' ' . $record->last_name . ' ' . $tagsList;
                 })
+                ->html()
                 ->searchable(['first_name', 'last_name'])
                 ->sortable(),
 
