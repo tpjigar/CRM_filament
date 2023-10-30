@@ -17,6 +17,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -106,8 +107,11 @@ class CustomerResource extends Resource
                 //
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()->hidden(fn($record) => $record->trashed()),
+                DeleteAction::make(),
+                RestoreAction::make(),
                 Action::make('Move to Stage')
+                    ->hidden(fn($record) => $record->trashed())
                     ->icon('heroicon-m-pencil-square')
                     ->form([
                         Select::make('pipeline_stage_id')
@@ -135,8 +139,17 @@ class CustomerResource extends Resource
                             ->success()
                             ->send();
                     }),
-                DeleteAction::make(),
             ])
+            ->recordUrl(function ($record) {
+                // If the record is trashed, return null
+                if ($record->trashed()) {
+                    // Null will disable the row click
+                    return null;
+                }
+
+                // Otherwise, return the edit page URL
+                return Pages\EditCustomer::getUrl([$record->id]);
+            })
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
