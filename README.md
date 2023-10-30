@@ -2,8 +2,6 @@
 
 CRM Using Filament is an open-source Customer Relationship Management (CRM) system built with [Filament](https://filamentphp.com/), a modern and powerful Laravel admin panel.
 
-![CRM Using Filament Screenshot](screenshot.png)
-
 ## Features
 
 - **User Management:** Easily manage CRM users and roles with the Filament admin panel.
