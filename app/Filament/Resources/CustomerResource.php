@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
+use App\Models\PipelineStage;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -46,6 +47,12 @@ class CustomerResource extends Resource
                 ->relationship('tags', 'name')
                 ->multiple(),
 
+            Select::make('pipeline_stage_id')
+                ->relationship('pipelineStage', 'name', function ($query){
+                    $query->orderBy('position', 'ASC');
+                })
+                ->default(PipelineStage::where('is_default', true)->first()?->id),
+
             Placeholder::make('created_at')
                 ->label('Created Date')
                 ->content(fn(?Customer $record): string => $record?->created_at?->diffForHumans() ?? '-'),
@@ -77,6 +84,8 @@ class CustomerResource extends Resource
                 ->searchable(),
 
             TextColumn::make('leadSource.name'),
+            TextColumn::make('pipelineStage.name'),
+
 
             TextColumn::make('created_at')
                 ->dateTime()
