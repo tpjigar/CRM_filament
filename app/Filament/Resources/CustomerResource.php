@@ -10,7 +10,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -105,6 +107,34 @@ class CustomerResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                Action::make('Move to Stage')
+                    ->icon('heroicon-m-pencil-square')
+                    ->form([
+                        Select::make('pipeline_stage_id')
+                            ->label('Status')
+                            ->options(PipelineStage::pluck('name', 'id')->toArray())
+                            ->default(function (Customer $record) {
+                                $currentPosition = $record->pipelineStage->position;
+                                return PipelineStage::where('position', '>', $currentPosition)->first()?->id;
+                            }),
+                        Textarea::make('notes')
+                            ->label('Notes')
+                    ])
+                    ->action(function (Customer $customer, array $data): void {
+                        $customer->pipeline_stage_id = $data['pipeline_stage_id'];
+                        $customer->save();
+
+                        $customer->pipelineStageLogs()->create([
+                            'pipeline_stage_id' => $data['pipeline_stage_id'],
+                            'notes' => $data['notes'],
+                            'user_id' => auth()->id()
+                        ]);
+
+                        Notification::make()
+                            ->title('Customer Pipeline Updated')
+                            ->success()
+                            ->send();
+                    }),
                 DeleteAction::make(),
             ])
             ->bulkActions([
